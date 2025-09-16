@@ -29,10 +29,11 @@
         init: function () {
           this.video = document.querySelector('#video');
           this.videoPlane = document.querySelector('#video-plane');
+          this.savedTime = 0; // Store the last playback position
 
           this.el.addEventListener('targetFound', () => {
-            console.log('Target found - starting video');
-            this.video.currentTime = 0;
+            console.log('Target found - resuming video from', this.savedTime);
+            this.video.currentTime = this.savedTime; // Resume from saved position
             this.video.play().then(() => {
               console.log('Video playing');
               this.videoPlane.setAttribute('visible', 'true');
@@ -40,7 +41,8 @@
           });
 
           this.el.addEventListener('targetLost', () => {
-            console.log('Target lost - pausing video');
+            console.log('Target lost - pausing video at', this.video.currentTime);
+            this.savedTime = this.video.currentTime; // Save current position
             this.video.pause();
             this.videoPlane.setAttribute('visible', 'false');
           });
