@@ -6,20 +6,46 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   </head>
   <body>
-    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <!-- <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"> -->
+    <a-scene mindar-image="imageTargetSrc: /targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       <a-assets>
-	<img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
-	<a-asset-item id="avatarModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item>
+	<img id="card" src="/card.png" />
+	<video id="video" src="/video.mp4" preload="auto" loop playsinline crossorigin="anonymous"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
+      <a-entity id="target" mindar-image-target="targetIndex: 0" video-handler>
         <a-plane src="#card" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-        <a-gltf-model rotation="0 0 0 " position="0 0 0.1" scale="0.005 0.005 0.005" src="#avatarModel"
+        <a-plane id="video-plane" material="src: #video; shader: flat" position="0 0 0.1" height="0.552" width="1" rotation="0 0 0"
           animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
-        >
+          visible="false"
+        ></a-plane>
       </a-entity>
     </a-scene>
+
+    <script>
+      AFRAME.registerComponent('video-handler', {
+        init: function () {
+          this.video = document.querySelector('#video');
+          this.videoPlane = document.querySelector('#video-plane');
+
+          this.el.addEventListener('targetFound', () => {
+            console.log('Target found - starting video');
+            this.video.currentTime = 0;
+            this.video.play().then(() => {
+              console.log('Video playing');
+              this.videoPlane.setAttribute('visible', 'true');
+            }).catch(e => console.log('Play failed:', e));
+          });
+
+          this.el.addEventListener('targetLost', () => {
+            console.log('Target lost - pausing video');
+            this.video.pause();
+            this.videoPlane.setAttribute('visible', 'false');
+          });
+        }
+      });
+    </script>
   </body>
 </html>
